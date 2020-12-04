@@ -38,9 +38,9 @@ val requiredParameters: ParameterValidators = mapOf(
 )
 
 fun PassportCandidate.isValid(): Boolean {
-    for ((paramName, function) in requiredParameters) {
+    for ((paramName, validationFunction) in requiredParameters) {
         val value = this[paramName] ?: return false
-        if (!function.invoke(value)) return false
+        if (!validationFunction.invoke(value)) return false
     }
     return true
 }
@@ -50,8 +50,8 @@ fun main() {
     val splits: List<String> = data.split("\n\n")
     val passports: List<PassportCandidate> = splits.map { split ->
         val passportSplits = split.split(' ', '\n').filter { it.isNotBlank() }
-        passportSplits.map {
-            val values = it.split(':')
+        passportSplits.map { parameterString ->
+            val values = parameterString.split(':')
             values[0] to values[1]
         }.toMap()
     }
