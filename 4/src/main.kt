@@ -3,6 +3,8 @@ import java.io.File
 typealias PassportCandidate = Map<String, String>
 typealias ParameterValidators = Map<String, (String) -> Boolean>
 
+val eyeColors = setOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth")
+
 val requiredParameters: ParameterValidators = mapOf(
     "byr" to { value ->
         try { value.toInt() in 1920..2002 }
@@ -16,10 +18,7 @@ val requiredParameters: ParameterValidators = mapOf(
         try { value.toInt() in 2020..2030 }
         catch (e: Exception) { false }
     },
-    "ecl" to { value ->
-        val legalValues = setOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth")
-        legalValues.contains(value)
-    },
+    "ecl" to { value -> eyeColors.contains(value) },
     "pid" to { value -> Regex("[0-9]{9}").matches(value) },
     "hcl" to { value -> Regex("#[a-f0-9]{6}").matches(value) },
     "hgt" to { value ->
@@ -45,16 +44,24 @@ fun PassportCandidate.isValid(): Boolean {
     return true
 }
 
+fun String.parseParameter(): Pair<String, String> {
+    val values = this.split(':')
+    return values[0] to values[1]
+}
+
+fun String.parsePassportCandidate(): PassportCandidate = this
+    .split(' ', '\n')
+    .filter { it.isNotBlank() }
+    .map { it.parseParameter() }
+    .toMap()
+
+fun String.parsePassportCandidates(): List<PassportCandidate> = this
+    .split("\n\n")
+    .map { it.parsePassportCandidate() }
+
 fun main() {
     val data: String = File("input.txt").readText()
-    val splits: List<String> = data.split("\n\n")
-    val passports: List<PassportCandidate> = splits.map { split ->
-        val passportSplits = split.split(' ', '\n').filter { it.isNotBlank() }
-        passportSplits.map { parameterString ->
-            val values = parameterString.split(':')
-            values[0] to values[1]
-        }.toMap()
-    }
-    val count = passports.count { it.isValid() }
+    val passports: List<PassportCandidate> = data.parsePassportCandidates()
+    val count: Int = passports.count { it.isValid() }
     println(count)
 }
