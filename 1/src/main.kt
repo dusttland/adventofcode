@@ -3,15 +3,19 @@ import java.io.File
 typealias Solution = Set<Int>
 typealias NumberSet = Set<Int>
 
+const val TARGET_SUM = 2020
+
 fun NumberSet.findSolution(solutionSize: Int) = this.findSolution(mutableSetOf(), solutionSize)
 
 fun NumberSet.findSolution(acc: MutableSet<Int>, solutionSize: Int): Solution? {
     if (acc.size >= solutionSize) {
         return when {
-            acc.sum() == 2020 -> acc
+            acc.sum() == TARGET_SUM -> acc
             else -> null
         }
     }
+
+    if (acc.sum() > TARGET_SUM) return null
 
     for (number in this) {
         if (acc.contains(number)) continue
