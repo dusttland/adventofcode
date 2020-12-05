@@ -36,7 +36,14 @@ val requiredParameters: ParameterValidators = mapOf(
     }
 )
 
-fun PassportCandidate.isValid(): Boolean {
+fun PassportCandidate.isValid1(): Boolean {
+    for ((paramName, _) in requiredParameters) {
+        this[paramName] ?: return false
+    }
+    return true
+}
+
+fun PassportCandidate.isValid2(): Boolean {
     for ((paramName, validationFunction) in requiredParameters) {
         val value = this[paramName] ?: return false
         if (!validationFunction.invoke(value)) return false
@@ -62,6 +69,12 @@ fun String.parsePassportCandidates(): List<PassportCandidate> = this
 fun main() {
     val data: String = File("input.txt").readText()
     val passports: List<PassportCandidate> = data.parsePassportCandidates()
-    val count: Int = passports.count { it.isValid() }
-    println(count)
+
+    println("--- Day 4: Passport Processing ---")
+    val count1: Int = passports.count { it.isValid1() }
+    println(count1)
+
+    println("--- Part Two ---")
+    val count2: Int = passports.count { it.isValid2() }
+    println(count2)
 }
