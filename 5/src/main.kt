@@ -1,11 +1,12 @@
 import java.io.File
-import kotlin.math.pow
 
 enum class HalvingStrategy { UPPER, LOWER }
 
 typealias Seats = Set<Int>
 
-fun bitAtPosition(position: Int) = 2f.pow(position).toInt()
+fun Int.pow(value: Int) = List(value) { this }.fold(1) { acc, elem -> acc * elem }
+
+fun bitAtPosition(position: Int): Int = 2.pow(position)
 
 fun String.halveUntilOneValue(halvingStrategy: (Char) -> HalvingStrategy): Int {
     var result: Int = 0
