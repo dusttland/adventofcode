@@ -5,28 +5,19 @@ enum class HalvingStrategy { UPPER, LOWER }
 
 typealias Seats = Set<Int>
 
-val IntRange.size: Int
-    get() = this.last - this.first
-
-val IntRange.halfSize: Int
-    get() = this.size / 2
-
-val IntRange.upperHalf: IntRange
-    get() = (this.first + this.halfSize + 1)..this.last
-
-val IntRange.lowerHalf: IntRange
-    get() = this.first..(this.first + this.halfSize)
+fun bitAtPosition(position: Int) = 2f.pow(position).toInt()
 
 fun String.halveUntilOneValue(halvingStrategy: (Char) -> HalvingStrategy): Int {
-    var range = 0 until 2f.pow(this.length).toInt()
-    this.forEach { char ->
-        val strategy: HalvingStrategy = halvingStrategy.invoke(char)
-        range = when (strategy) {
-            HalvingStrategy.UPPER -> range.upperHalf
-            HalvingStrategy.LOWER -> range.lowerHalf
+    var result: Int = 0
+    this.forEachIndexed { index, char ->
+        val strategy = halvingStrategy.invoke(char)
+        if (strategy == HalvingStrategy.UPPER) {
+            val position = this.length - index - 1
+            val bit = bitAtPosition(position)
+            result = result or bit
         }
     }
-    return range.first
+    return result
 }
 
 fun String.parseSeatId(): Int {
