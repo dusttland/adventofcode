@@ -4,7 +4,7 @@ fun main() {
     val data: String = File("input.txt").readText()
     val groups: List<List<Set<Char>>> = data
         .split("\n\n")
-        .map { persons ->
+        .map { persons: String ->
             persons
                 .split('\n')
                 .map { answers: String ->
