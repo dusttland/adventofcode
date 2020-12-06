@@ -16,7 +16,7 @@ fun main() {
         .map { persons: List<Set<Char>> ->
             persons.fold(mutableSetOf<Char>()) { acc, answers: Set<Char> -> acc.addAll(answers); acc }
         }
-        .fold(0) { acc, list -> acc + list.size }
+        .fold(0) { acc, set: Set<Char> -> acc + set.size }
 
     val answer2: Int = groups
         .map { persons: List<Set<Char>> ->
@@ -24,7 +24,7 @@ fun main() {
                 .fold(mutableSetOf<Char>()) { acc, answers: Set<Char> -> acc.addAll(answers); acc }
                 .filter { answer: Char -> persons.all { answers: Set<Char> -> answers.contains(answer)} }
         }
-        .fold(0) { acc, list -> acc + list.size }
+        .fold(0) { acc, list: List<Char> -> acc + list.size }
 
     println("--- Day 6: Custom Customs ---")
     println(answer1)
