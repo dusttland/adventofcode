@@ -8,13 +8,13 @@ fun bitAtPosition(position: Int): Int = 1 shl position
 
 fun String.halveUntilOneValue(halvingStrategy: (Char) -> HalvingStrategy): Int {
     var result: Int = 0
-    this.forEachIndexed { index, char ->
+    var bit: Int = bitAtPosition(this.length - 1)
+    this.forEach { char ->
         val strategy = halvingStrategy.invoke(char)
         if (strategy == HalvingStrategy.UPPER) {
-            val position = this.length - index - 1
-            val bit = bitAtPosition(position)
             result = result or bit
         }
+        bit = bit shr 1
     }
     return result
 }
