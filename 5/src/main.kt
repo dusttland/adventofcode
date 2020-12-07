@@ -4,9 +4,7 @@ enum class HalvingStrategy { UPPER, LOWER }
 
 typealias Seats = Set<Int>
 
-fun Int.pow(value: Int) = List(value) { this }.fold(1) { acc, elem -> acc * elem }
-
-fun bitAtPosition(position: Int): Int = 2.pow(position)
+fun bitAtPosition(position: Int): Int = 1 shl position
 
 fun String.halveUntilOneValue(halvingStrategy: (Char) -> HalvingStrategy): Int {
     var result: Int = 0
@@ -22,8 +20,8 @@ fun String.halveUntilOneValue(halvingStrategy: (Char) -> HalvingStrategy): Int {
 }
 
 fun String.parseSeatId(): Int {
-    val rowString = this.substring(0, 7)
-    val columnString = this.substring(7)
+    val rowString = this.substring(0, 7).trim()
+    val columnString = this.substring(7).trim()
 
     val row: Int = rowString.halveUntilOneValue { char ->
         when (char) {
@@ -31,7 +29,6 @@ fun String.parseSeatId(): Int {
             else -> HalvingStrategy.LOWER
         }
     }
-
     val column: Int = columnString.halveUntilOneValue { char ->
         when (char) {
             'R' -> HalvingStrategy.UPPER
@@ -62,7 +59,7 @@ fun main() {
     val seatIds: Seats = data.parseSeatIds()
 
     println("--- Day 5: Binary Boarding ---")
-    println(seatIds.max())
+    println(seatIds.maxOrNull())
 
     println("--- Part Two ---")
     println(seatIds.findMySeatId())
