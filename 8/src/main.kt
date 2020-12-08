@@ -63,6 +63,25 @@ fun Operation.swapped(): Operation {
     return Operation(newName, this.value)
 }
 
+fun Operations.swappableIndexes(): List<Int> {
+    val swappableIndexes = mutableListOf<Int>()
+    this.forEachIndexed { index, operation ->
+        if (operation.name == "jmp" || operation.name == "nop")
+            swappableIndexes.add(index)
+    }
+    return swappableIndexes
+}
+
+fun BootCode.swapAndRunUntilSucceeds(operations: Operations) {
+    val swappableIndexes = operations.swappableIndexes()
+    for (index in swappableIndexes) {
+        operations[index] = operations[index].swapped()
+        val didSucceed = this.run()
+        operations[index] = operations[index].swapped()
+        if (didSucceed) break
+    }
+}
+
 fun String.parseOperation(): Operation {
     val splits = this.split(' ')
     val name: String = splits[0]
@@ -80,21 +99,11 @@ fun main() {
     val operations: Operations = data.parseOperations()
     val bootCode = BootCode(operations)
 
+    println("--- Day 8: Handheld Halting ---")
     bootCode.run()
     println(bootCode.accValue)
 
-    val swappableOperationIndexes = mutableListOf<Int>()
-    operations.forEachIndexed { index, operation ->
-        if (operation.name == "jmp" || operation.name == "nop")
-            swappableOperationIndexes.add(index)
-    }
-
-    for (index in swappableOperationIndexes) {
-        operations[index] = operations[index].swapped()
-        if (bootCode.run())
-            break
-        operations[index] = operations[index].swapped()
-    }
-
+    println("--- Part Two ---")
+    bootCode.swapAndRunUntilSucceeds(operations)
     println(bootCode.accValue)
 }
