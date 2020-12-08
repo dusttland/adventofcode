@@ -1,8 +1,9 @@
 import java.io.File
 
 typealias Bag = String
-typealias BagInfo = Map<Bag, BagContents>
 typealias BagContents = Map<Bag, Int>
+typealias BagInfo = Map<Bag, BagContents>
+typealias ParentInfo = Map<Bag, Set<Bag>>
 
 fun String.cleanedOneBagContentString(): String {
     return this.trim().removeSuffix(".").removeSuffix("s").removeSuffix(" bag").trim()
@@ -36,17 +37,25 @@ fun String.parseBagInfo(): BagInfo = this
     .map { it.parseOneBagInfo() }
     .toMap()
 
-fun Bag.doesHold(otherBag: Bag, info: BagInfo) = this.doesHold(otherBag, info, mutableSetOf())
+fun BagInfo.parentInfo(): ParentInfo {
+    val parentInfo: MutableMap<Bag, MutableSet<Bag>> = mutableMapOf()
+    this.forEach { (parentBag, contents) ->
+        contents.forEach { (childBag, _) ->
+            val parentBags: MutableSet<Bag>? = parentInfo[childBag]
+            when {
+                parentBags != null -> parentBags.add(parentBag)
+                else -> parentInfo[childBag] = mutableSetOf(parentBag)
+            }
+        }
+    }
+    return parentInfo
+}
 
-fun Bag.doesHold(otherBag: Bag, info: BagInfo, visitedBags: MutableSet<Bag>): Boolean {
-    if (visitedBags.contains(this)) return false
-    visitedBags.add(this)
-
-    val contents: BagContents? = info[this]
-    return when {
-        contents == null -> false
-        contents.containsKey(otherBag) -> true
-        else -> contents.any { (childBag, _) -> childBag.doesHold(otherBag, info, visitedBags) }
+fun Bag.allParents(parentInfo: ParentInfo): Set<Bag> {
+    val directParents: Set<Bag> = parentInfo[this] ?: return setOf()
+    return directParents.fold(directParents.toMutableSet()) { allParents, directParent ->
+        allParents.addAll(directParent.allParents(parentInfo))
+        allParents
     }
 }
 
@@ -60,9 +69,10 @@ fun Bag.nestedBagCount(info: BagInfo): Long {
 fun main() {
     val data: String = File("input.txt").readText()
     val bagInfo: BagInfo = data.parseBagInfo()
+    val parentInfo: ParentInfo = bagInfo.parentInfo()
     val myShinyGoldBag: Bag = "shiny gold"
 
-    val answer1 = bagInfo.count { (bag, _) -> bag.doesHold(myShinyGoldBag, bagInfo) }
+    val answer1 = myShinyGoldBag.allParents(parentInfo).size
     val answer2 = myShinyGoldBag.nestedBagCount(bagInfo)
 
     println("--- Day 7: Handy Haversacks ---")
