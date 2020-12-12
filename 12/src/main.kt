@@ -1,4 +1,5 @@
 import java.io.File
+import java.security.InvalidParameterException
 import kotlin.math.abs
 
 enum class Direction {
@@ -21,8 +22,6 @@ enum class Direction {
         }
 }
 
-enum class Move { FORWARD, RIGHT, LEFT }
-
 data class Position(val x: Int, val y: Int) {
     operator fun plus(other: Position) = Position(this.x + other.x, this.y + other.y)
     operator fun minus(other: Position) = Position(this.x - other.x, this.y - other.y)
@@ -43,16 +42,17 @@ data class Position(val x: Int, val y: Int) {
 data class Instruction(val prefix: Char, val value: Int)
 
 abstract class Ship {
+    abstract var position: Position
+        protected set
+
+    infix fun apply(instructions: List<Instruction>) = instructions.forEach { this apply it }
+
     infix fun apply(instruction: Instruction) {
-        val direction: Direction? = instruction.prefix.toDirectionOrNull()
-        val move: Move? = instruction.prefix.toMoveOrNull()
-        when {
-            direction != null -> this.direction(direction, instruction.value)
-            move != null -> when (move) {
-                Move.FORWARD -> this.forward(instruction.value)
-                Move.RIGHT -> this.right(instruction.value / 90)
-                Move.LEFT -> this.left(instruction.value / 90)
-            }
+        when (instruction.prefix) {
+            'N', 'E', 'S', 'W' -> this.direction(instruction.prefix.toDirection(), instruction.value)
+            'F' -> this.forward(instruction.value)
+            'R' -> this.right(instruction.value / 90)
+            'L' -> this.left(instruction.value / 90)
         }
     }
 
@@ -62,13 +62,10 @@ abstract class Ship {
     abstract fun right(count: Int)
 }
 
-open class SimpleShip(
-    position: Position,
+class SimpleShip(
+    override var position: Position,
     private var faceDirection: Direction
 ) : Ship() {
-    var position: Position = position
-        private set
-
     override fun forward(count: Int) {
         this.direction(this.faceDirection, count)
     }
@@ -84,12 +81,9 @@ open class SimpleShip(
 }
 
 class WaypointShip(
-    position: Position,
+    override var position: Position,
     private var waypointPosition: Position
 ) : Ship() {
-    var position: Position = position
-        private set
-
     override fun forward(count: Int) {
         val posChange = this.waypointPosition * count
         this.position += posChange
@@ -109,19 +103,12 @@ class WaypointShip(
     }
 }
 
-fun Char.toMoveOrNull(): Move? = when (this) {
-    'F' -> Move.FORWARD
-    'L' -> Move.LEFT
-    'R' -> Move.RIGHT
-    else -> null
-}
-
-fun Char.toDirectionOrNull(): Direction? = when (this) {
+fun Char.toDirection(): Direction = when (this) {
     'N' -> Direction.NORTH
     'E' -> Direction.EAST
     'S' -> Direction.SOUTH
     'W' -> Direction.WEST
-    else -> null
+    else -> throw InvalidParameterException("'$this' is not a direction.")
 }
 
 fun Direction.toPosition() = when (this) {
@@ -143,11 +130,12 @@ fun main() {
     val startPosition = Position(0, 0)
     val waypointPosition = Position(10, -1)
 
-    val ship1 = SimpleShip(startPosition, Direction.EAST)
-    instructions.forEach { ship1 apply it }
-    println("Part 1: ${startPosition manhattanDistanceTo ship1.position}")
+    val ship1: Ship = SimpleShip(startPosition, Direction.EAST)
+    ship1 apply instructions
 
-    val ship2 = WaypointShip(startPosition, waypointPosition)
-    instructions.forEach { ship2 apply it }
+    val ship2: Ship = WaypointShip(startPosition, waypointPosition)
+    ship2 apply instructions
+
+    println("Part 1: ${startPosition manhattanDistanceTo ship1.position}")
     println("Part 2: ${startPosition manhattanDistanceTo ship2.position}")
 }
