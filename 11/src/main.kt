@@ -21,7 +21,7 @@ data class Position(val x: Int, val y: Int) {
         )
 }
 
-fun Layout.modified(newValueFunction: (pos: Position, prev: Char) -> Char): Layout {
+fun Layout.copyModified(newValueFunction: (pos: Position, prev: Char) -> Char): Layout {
     return Array(this.size) { y: Int ->
         Array(this[y].size) { x: Int ->
             val pos = Position(x, y)
@@ -30,12 +30,14 @@ fun Layout.modified(newValueFunction: (pos: Position, prev: Char) -> Char): Layo
     }
 }
 
-fun Layout.contains(pos: Position): Boolean = pos.y in this.indices && pos.x in this[pos.y].indices
+infix fun Layout.contains(pos: Position): Boolean = pos.y in this.indices && pos.x in this[pos.y].indices
+
+infix fun Position.isIn(layout: Layout): Boolean = layout.contains(this)
 
 fun Layout.value(pos: Position): Char = this[pos.y][pos.x]
 
 fun Layout.valueOrNull(pos: Position): Char? = when {
-    this.contains(pos) -> this.value(pos)
+    pos isIn this -> this.value(pos)
     else -> null
 }
 
@@ -61,15 +63,15 @@ fun Layout.countVisibleOccupiedSeats(pos: Position): Int {
 
 fun Layout.countAdjacentOccupiedSeats(pos: Position): Int = pos.neighbours.count { this.isOccupiedSeat(it) }
 
-fun Layout.occupy1(): Layout = this.modified { pos: Position, prev: Char ->
+fun Layout.occupy1(): Layout = this.copyModified { pos: Position, prev: Char ->
     when {
         prev == EMPTY_SEAT && this.countAdjacentOccupiedSeats(pos) == 0 -> OCCUPIED_SEAT
         prev == OCCUPIED_SEAT && this.countAdjacentOccupiedSeats(pos) >= 4 -> EMPTY_SEAT
-        else -> this.value(pos)
+        else -> prev
     }
 }
 
-fun Layout.occupy2(): Layout = this.modified { pos: Position, prev: Char ->
+fun Layout.occupy2(): Layout = this.copyModified { pos: Position, prev: Char ->
     when {
         prev == EMPTY_SEAT && this.countVisibleOccupiedSeats(pos) == 0 -> OCCUPIED_SEAT
         prev == OCCUPIED_SEAT && this.countVisibleOccupiedSeats(pos) >= 5 -> EMPTY_SEAT
@@ -77,9 +79,9 @@ fun Layout.occupy2(): Layout = this.modified { pos: Position, prev: Char ->
     }
 }
 
-fun Layout.countOccupiedSeats(): Int = this.fold(0) { acc, chars -> acc + chars.count { it == OCCUPIED_SEAT } }
+fun Layout.countOccupiedSeats(): Int = this.sumBy { chars -> chars.count { it == OCCUPIED_SEAT } }
 
-fun Layout.runUntilStable(changeFunction: (Layout) -> Layout): Layout {
+fun Layout.modifyUntilStable(changeFunction: (Layout) -> Layout): Layout {
     var oldLayout: Layout = this
     var newLayout: Layout
     while (true) {
@@ -100,9 +102,9 @@ fun main() {
     val data: String = File("input.txt").readText()
     val layout: Layout = data.parseLayout()
 
-    val resultLayout1 = layout.runUntilStable { accLayout -> accLayout.occupy1() }
+    val resultLayout1 = layout.modifyUntilStable { accLayout -> accLayout.occupy1() }
     println("Part 1: ${resultLayout1.countOccupiedSeats()}")
 
-    val resultLayout2 = layout.runUntilStable { accLayout -> accLayout.occupy2() }
+    val resultLayout2 = layout.modifyUntilStable { accLayout -> accLayout.occupy2() }
     println("Part 2: ${resultLayout2.countOccupiedSeats()}")
 }
