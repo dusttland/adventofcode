@@ -38,8 +38,8 @@ fun List<Long>.bitVariation(number: Long): List<Pair<Long, Boolean>> {
 fun Long.applyVariation(variation: List<Pair<Long, Boolean>>): Long {
     var newValue = this
     variation.forEach {
-        val bit = it.first
-        val isSet = it.second
+        val bit: Long = it.first
+        val isSet: Boolean = it.second
         when (isSet) {
             true -> newValue = bit or newValue
             false -> newValue = bit.inv() and newValue
@@ -62,7 +62,7 @@ fun Long.allFloatingAddresses(mask: String): List<Long> {
 
     val addressCount: Int = 1 shl floatingBits.size
     for (variationNumber in 0 until addressCount) {
-        val variation = floatingBits.bitVariation(variationNumber.toLong())
+        val variation: List<Pair<Long, Boolean>> = floatingBits.bitVariation(variationNumber.toLong())
         val newAddress = newValue.applyVariation(variation)
         addresses.add(newAddress)
     }
