@@ -1,6 +1,8 @@
 import java.io.File
 
 infix fun List<Int>.numberAtTurn(targetTurn: Int): Int {
+    if (targetTurn <= this.size) return this[targetTurn - 1]
+
     val occ: MutableMap<Int, Int> = LinkedHashMap(targetTurn / 6)
     var turn: Int = 0
     var lastNumber: Int = 0
