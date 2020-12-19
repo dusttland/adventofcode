@@ -4,7 +4,7 @@ typealias Coords = List<Int>
 typealias ActiveCubes = Set<Coords>
 
 fun Coords.withMutableNeighbours(): MutableSet<Coords> {
-    if (this.isEmpty()) return mutableSetOf(listOf(), listOf(), listOf())
+    if (this.isEmpty()) return mutableSetOf(listOf())
     val childDimensionNeighbours = this.subList(1, this.size).withMutableNeighbours()
     val neighbours = mutableSetOf<Coords>()
     for (i in -1..1) {
