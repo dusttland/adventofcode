@@ -61,6 +61,10 @@ fun PuzzleInput.isValid2(string: String): Boolean {
 
     val len = values42.first().length
     val substrings = string.substrings(len)
+
+    if (substrings.first() !in values42) return false
+    if (substrings.last() !in values31) return false
+
     val count42 = substrings.count { it in values42 }
     val count31 = substrings.count { it in values31 }
 
@@ -80,7 +84,7 @@ fun PuzzleInput.isValid2(string: String): Boolean {
         }
     }
 
-    return substrings.first() in values42 && substrings.last() in values31
+    return true
 }
 
 fun String.parseRule(): Rule {
@@ -115,7 +119,7 @@ fun String.parseRules(): Map<Int, Rule> = this
 fun String.parseStrings(): Set<String> = this.split('\n').map { it.trim() }.toSet()
 
 fun String.parsePuzzleInput(): PuzzleInput {
-    val splits: List<String> = this.split("\n\r\n")
+    val splits: List<String> = this.split("\n\n")
     val rules: Map<Int, Rule> = splits[0].parseRules()
     val strings: Set<String> = splits[1].parseStrings()
     return PuzzleInput(rules, strings)
