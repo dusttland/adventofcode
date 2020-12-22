@@ -6,19 +6,18 @@ typealias Ranges = List<Range>
 typealias Ticket = List<Int>
 
 class Data(val ranges: Ranges, val myTicket: Ticket, val nearbyTickets: List<Ticket>) {
-    fun isValid(ticket: Ticket): Boolean = ticket.all { number -> number isIn this.ranges }
+    fun isValid(ticket: Ticket): Boolean = ticket.all { number -> number in this.ranges }
     fun validTickets(): List<Ticket> = this.nearbyTickets.filter { this.isValid(it) }
     fun invalidTickets(): List<Ticket> = this.nearbyTickets.filter { !this.isValid(it) }
 }
 
-infix fun Int.isIn(rangePair: RangePair) = this in rangePair.first || this in rangePair.second
-infix fun Int.isIn(range: Range) = this isIn range.pair
-infix fun Int.isIn(ranges: Ranges) = ranges.any { this isIn it }
-infix fun Int.notIn(ranges: Ranges) = !(this isIn ranges)
+operator fun RangePair.contains(number: Int) = number in this.first || number in this.second
+operator fun Range.contains(number: Int) = number in this.pair
+operator fun Ranges.contains(number: Int) = this.any { number in it }
 
 fun Ranges.containingRangeIndexes(number: Int): Set<Int> = this
     .indices
-    .filter { index -> number isIn this[index] }
+    .filter { index -> number in this[index] }
     .toSet()
 
 fun <T> List<T>.subList(fromIndex: Int): List<T> = this.subList(fromIndex, this.size)
@@ -75,7 +74,7 @@ fun Data.secondAnswer(): Long? {
 fun Data.firstAnswer(): Int {
     val invalidTickets = this.invalidTickets()
     val invalidNumbers = invalidTickets.fold(mutableListOf<Int>()) { acc, ticket ->
-        acc.addAll(ticket.filter { number -> number notIn this.ranges })
+        acc.addAll(ticket.filter { number -> number !in this.ranges })
         acc
     }
     return invalidNumbers.sum()
