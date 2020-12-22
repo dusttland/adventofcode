@@ -63,7 +63,7 @@ fun recursiveCombat(decks: Decks): GameResult {
         val c2 = decks.second.pop()
 
         val winningPlayer: Int = when {
-            decks.first.size >= c1 && decks.second.size >= c2 -> { recursiveCombat(decks.copied(c1, c2)).winner }
+            decks.first.size >= c1 && decks.second.size >= c2 -> recursiveCombat(decks.copied(c1, c2)).winner
             c1 > c2 -> 1
             else -> 2
         }
